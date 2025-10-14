@@ -1,0 +1,41 @@
+name: CD Deploy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.VM_SSH_KEY }}
+
+      - name: Deploy static site via SSH
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
+            APP_DIR=/home/${{ secrets.VM_USER }}/mysite/site
+            REPO_URL=https://github.com/darktezi/static-website-example.git
+
+            if [ ! -d \$APP_DIR ]; then
+              echo '🚀 Клонируем репозиторий...'
+              git clone \$REPO_URL \$APP_DIR
+            else
+              echo '🔄 Обновляем репозиторий...'
+              git -C \$APP_DIR pull
+            fi
+
+            echo '✅ Сайт обновлён в '\$APP_DIR
+          "
+
+      - name: Restart server
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
+            sudo systemctl restart nginx
+          "
