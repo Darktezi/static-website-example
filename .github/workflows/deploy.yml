@@ -15,12 +15,12 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.VM_SSH_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy static site via SSH
         run: |
-          ssh -p ${{ 2441 }} ${{ darktezi }}@${{ course.prafdin.ru }} "
-            APP_DIR=/home/${{ secrets.VM_USER }}/mysite/site
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
+            APP_DIR=/home/${{ secrets.USER }}/mysite/site
             REPO_URL=https://github.com/darktezi/static-website-example.git
 
             if [ ! -d \$APP_DIR ]; then
@@ -36,6 +36,6 @@ jobs:
 
       - name: Restart server
         run: |
-          ssh -p ${{ 2441 }} ${{ darktezi }}@${{ course.prafdin.ru }} "
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
             sudo systemctl restart nginx
           "
