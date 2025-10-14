@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: ["github-actions"]
+  pull_request:
+    branches: ["github-actions"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make test script executable
+        run: chmod +x test.sh
+
+      - name: Run simple tests
+        run: ./test.sh
