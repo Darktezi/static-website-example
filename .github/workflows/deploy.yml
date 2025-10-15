@@ -25,14 +25,11 @@ jobs:
 
             if [ ! -d \$APP_DIR ]; then
               echo '🚀 Клонируем репозиторий...'
-              git clone -b github-actions \$REPO_URL \$APP_DIR
+              git clone \$REPO_URL \$APP_DIR
             else
-              echo '🔄 Обновляем ветку github-actions...'
-              git -C \$APP_DIR fetch origin github-actions
-              git -C \$APP_DIR checkout github-actions
-              git -C \$APP_DIR pull origin github-actions
+              echo '🔄 Обновляем репозиторий...'
+              git -C \$APP_DIR pull
             fi
-
 
             echo '✅ Сайт обновлён в '\$APP_DIR
           "
