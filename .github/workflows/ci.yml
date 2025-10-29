@@ -26,6 +26,10 @@ jobs:
 
   docker:
       runs-on: ubuntu-latest
+      permissions:
+      contents: read
+      packages: write
+      actions: read
       needs: test
       
       steps:
