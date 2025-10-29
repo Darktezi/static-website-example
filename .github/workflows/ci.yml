@@ -36,7 +36,7 @@ jobs:
           run: docker build -t my-app .
           
         - name: Log in to GHCR
-          run: echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
+          run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
             
         - name: Push to GHCR
           run: |
