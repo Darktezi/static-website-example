@@ -40,7 +40,10 @@ jobs:
           run: docker build -t my-app .
           
         - name: Log in to GHCR
-          run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
+          with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKEN }}
             
         - name: Push to GHCR
           run: |
