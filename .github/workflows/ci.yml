@@ -41,9 +41,9 @@ jobs:
           
         - name: Log in to GHCR
           with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.TOKEN }}
             
         - name: Push to GHCR
           run: |
