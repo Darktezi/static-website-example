@@ -41,7 +41,7 @@ jobs:
           
         - name: Log in to GHCR
           run: |
-          echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
+            echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
             
         - name: Push to GHCR
           run: |
