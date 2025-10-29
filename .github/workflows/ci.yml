@@ -44,5 +44,5 @@ jobs:
             
         - name: Push to GHCR
           run: |
-            docker tag my-app ghcr.io/${{ github.repository_owner }}/static-website-example:latest
-            docker push ghcr.io/${{ github.repository_owner }}/static-website-example:latest
+            docker tag my-app ghcr.io/darktezi/static-website-example:latest
+            docker push ghcr.io/darktezi/static-website-example:latest
