@@ -23,3 +23,26 @@ jobs:
 
       - name: Run simple tests
         run: ./test.sh
+
+docker:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Build Docker image
+        run: docker build -t my-app .
+        
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Push to GHCR
+        run: |
+          docker tag my-app ghcr.io/${{ github.repository_owner }}/static-website-example:latest
+          docker push ghcr.io/${{ github.repository_owner }}/static-website-example:latest
