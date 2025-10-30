@@ -17,26 +17,28 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy latest main branch via SSH
+      - name: Deploy Docker container via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
-            APP_DIR=/home/${{ secrets.USER }}/mysite/site
-            REPO_URL=https://github.com/darktezi/static-website-example.git
-            BRANCH=main
-
-            if [ ! -d $APP_DIR ]; then
-                echo '🚀 Клонируем репозиторий main...'
-                git clone -b $BRANCH $REPO_URL $APP_DIR
-            else
-                echo '🔄 Обновляем ветку main...'
-                git -C $APP_DIR fetch origin $BRANCH
-                git -C $APP_DIR checkout $BRANCH
-                git -C $APP_DIR pull origin $BRANCH
-            fi
-
-            echo '📦 Текущая ветка:'
-            git -C $APP_DIR rev-parse --abbrev-ref HEAD
-            echo '🧾 Последний коммит:'
-            git -C $APP_DIR log -1 --oneline
-            echo '✅ Сайт обновлён в '\$APP_DIR
+            # Останавливаем старый контейнер
+            docker stop static-site || true
+            docker rm static-site || true
+            
+            # Pull latest image from GHCR
+            echo '📦 Pulling latest Docker image...'
+            docker pull ghcr.io/darktezi/static-website-example:latest
+            
+            # Запускаем новый контейнер
+            echo '🚀 Starting new container...'
+            docker run -d \
+              --name static-site \
+              -p 80:80 \
+              --restart unless-stopped \
+              ghcr.io/darktezi/static-website-example:latest
+            
+            # Очистка старых образов
+            docker image prune -f
+            
+            echo '✅ Deployment completed!'
+            echo '🌐 Site is available at: http://${{ secrets.HOST }}'
           "
