@@ -23,7 +23,7 @@ jobs:
             set -e  # Останавливаться при ошибках
             
             echo '🔐 Logging into GHCR...'
-            echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
             
             echo '📥 Pulling Docker image...'
             docker pull ghcr.io/darktezi/static-website-example:latest
