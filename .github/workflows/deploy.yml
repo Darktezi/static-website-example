@@ -19,28 +19,27 @@ jobs:
 
       - name: Deploy Docker container via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
-            set -e  # Останавливаться при ошибках
-            
-            echo '🔐 Logging into GHCR...'
-            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
-            
-            echo '📥 Pulling Docker image...'
-            docker pull ghcr.io/darktezi/static-website-example:latest
-            
-            echo '🔍 Checking image exists...'
-            docker images ghcr.io/darktezi/static-website-example
-            
-            echo '🛑 Stopping old container...'
-            docker stop static-site 2>/dev/null || echo 'No container to stop'
-            docker rm static-site 2>/dev/null || echo 'No container to remove'
-            
-            echo '🚀 Starting new container...'
-            docker run -d --name static-site -p 8080:80 ghcr.io/darktezi/static-website-example:latest
-            
-            echo '🌐 Testing internal access...'
-            curl -f http://localhost || echo '❌ Internal access failed'
-            
-            echo '🎉 Deployment completed!'
-            echo '🔗 Site should be available at: http://app.akutin.your-proxy-domain'
-          "
+          ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" bash -s <<'EOF'
+            set -e
+
+            echo "🔐 Logging into GHCR..."
+            echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            IMAGE="ghcr.io/darktezi/static-website-example:latest"
+
+            echo "📥 Pulling image: $IMAGE"
+            docker pull "$IMAGE"
+
+            echo "🛑 Stopping old container..."
+            docker stop static-site 2>/dev/null || echo "No container to stop"
+            docker rm static-site 2>/dev/null || echo "No container to remove"
+
+            echo "🚀 Starting new container..."
+            docker run -d --name static-site -p 8080:80 "$IMAGE"
+
+            echo "🌐 Testing internal access..."
+            curl -f http://localhost || echo "❌ Internal access failed"
+
+            echo "🎉 Deployment completed!"
+            echo "🔗 Site: http://app.akutin.your-proxy-domain"
+          EOF
