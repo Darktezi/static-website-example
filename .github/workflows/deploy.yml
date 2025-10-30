@@ -23,32 +23,33 @@ jobs:
             set -e  # Останавливаться при ошибках
             
             echo '🔐 Logging into GHCR...'
-            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
             
             echo '📥 Pulling Docker image...'
             docker pull ghcr.io/darktezi/static-website-example:latest
             
-            echo '🔍 Checking image...'
+            echo '🔍 Checking image exists...'
             docker images ghcr.io/darktezi/static-website-example
             
             echo '🛑 Stopping old container...'
-            docker stop static-site || true
-            docker rm static-site || true
+            docker stop static-site 2>/dev/null || echo 'No container to stop'
+            docker rm static-site 2>/dev/null || echo 'No container to remove'
             
             echo '🚀 Starting new container...'
-            docker run -d \
-              --name static-site \
-              -p 80:80 \
-              --restart unless-stopped \
-              ghcr.io/darktezi/static-website-example:latest
+            docker run -d --name static-site -p 80:80 ghcr.io/darktezi/static-website-example:latest
             
             echo '⏳ Waiting for container to start...'
-            sleep 10
+            sleep 5
             
-            echo '🔍 Final checks...'
+            echo '🔍 Checking container status...'
             docker ps
-            echo 'Container logs:'
-            docker logs static-site || echo 'No logs yet'
+            
+            echo '📋 Container logs:'
+            docker logs static-site
+            
+            echo '🌐 Testing internal access...'
+            curl -f http://localhost || echo '❌ Internal access failed'
             
             echo '🎉 Deployment completed!'
+            echo '🔗 Site should be available at: http://app.akutin.your-proxy-domain'
           "
