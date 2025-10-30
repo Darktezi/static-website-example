@@ -22,10 +22,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" bash -s <<'EOF'
             set -e
 
+            IMAGE="ghcr.io/darktezi/static-website-example:latest"
+
             echo "🔐 Logging into GHCR..."
             echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
-            IMAGE="ghcr.io/darktezi/static-website-example:latest"
 
             echo "📥 Pulling image: $IMAGE"
             docker pull "$IMAGE"
@@ -34,12 +34,14 @@ jobs:
             docker stop static-site 2>/dev/null || echo "No container to stop"
             docker rm static-site 2>/dev/null || echo "No container to remove"
 
-            echo "🚀 Starting new container..."
-            docker run -d --name static-site -p 8080:80 "$IMAGE"
+            echo "🚀 Starting new container with restart policy..."
+            docker run -d --restart always --name static-site -p 8080:80 "$IMAGE"
 
-            echo "🌐 Testing internal access..."
-            curl -f http://localhost || echo "❌ Internal access failed"
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
 
-            echo "🎉 Deployment completed!"
-            echo "🔗 Site: http://app.akutin.your-proxy-domain"
+            echo "✅ Checking container status..."
+            docker ps | grep static-site
+
+            echo "🎉 Deployment completed successfully!"
           EOF
