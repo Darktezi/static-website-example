@@ -17,14 +17,33 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      name: CD Deploy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Deploy Docker container via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
             set -e
 
-            APP_NAME=my-static-site
+            APP_NAME=static-site
             IMAGE_NAME=ghcr.io/darktezi/static-website-example:latest
-            CONTAINER_NAME=my_static_site_container
+            CONTAINER_NAME=static-site
 
             echo '📦 Авторизация в GHCR...'
             echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u Darktezi --password-stdin
@@ -32,17 +51,20 @@ jobs:
             echo '⬇️ Тянем свежий Docker-образ...'
             docker pull \$IMAGE_NAME
 
-            echo '🧹 Останавливаем старый контейнер (если есть)...'
+            echo '🛑 Останавливаем старый контейнер...'
             docker stop \$CONTAINER_NAME || true
             docker rm \$CONTAINER_NAME || true
 
-            echo '🚀 Запускаем новый контейнер...'
+            echo '🚀 Запускаем новый контейнер (порт 8080:80)...'
             docker run -d \
               --name \$CONTAINER_NAME \
-              -p 80:80 \
+              -p 8080:80 \
               --restart always \
               \$IMAGE_NAME
 
-            echo '✅ Деплой завершён. Контейнер запущен:'
+            echo '✅ Проверяем статус контейнера...'
             docker ps --filter name=\$CONTAINER_NAME
+
+            echo '🌐 Приложение доступно по адресу: http://app.${{ secrets.ID }}.${{ secrets.PROXY }}'
           "
+
