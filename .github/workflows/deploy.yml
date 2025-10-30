@@ -20,20 +20,21 @@ jobs:
       - name: Deploy Docker container via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
-            # 1. Логинимся в GHCR
-            echo '🔐 Logging into GHCR...'
-            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            set -e  # Останавливаться при ошибках
             
-            # 2. Скачиваем образ
+            echo '🔐 Logging into GHCR...'
+            echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            
             echo '📥 Pulling Docker image...'
             docker pull ghcr.io/darktezi/static-website-example:latest
             
-            # 3. Останавливаем старый контейнер
+            echo '🔍 Checking if image exists...'
+            docker images | grep static-website-example
+            
             echo '🛑 Stopping old container...'
             docker stop static-site || true
             docker rm static-site || true
             
-            # 4. Запускаем новый контейнер
             echo '🚀 Starting new container...'
             docker run -d \
               --name static-site \
@@ -41,13 +42,14 @@ jobs:
               --restart unless-stopped \
               ghcr.io/darktezi/static-website-example:latest
             
-            # 5. Проверяем
-            echo '✅ Checking deployment...'
+            echo '⏳ Waiting for container to start...'
             sleep 5
+            
+            echo '🔍 Checking container status...'
             docker ps
-            echo '📱 Testing site...'
-            curl -s http://localhost | head -3 || echo '⚠️ Site not responding yet'
+            
+            echo '🌐 Testing site accessibility...'
+            curl -f http://localhost || echo '⚠️ Site not accessible'
             
             echo '🎉 Deployment completed!'
-            echo '🌐 Site available at: http://app.${{ secrets.ID }}.${{ secrets.PROXY_DOMAIN }}'
           "
