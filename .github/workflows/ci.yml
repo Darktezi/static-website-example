@@ -23,3 +23,27 @@ jobs:
 
       - name: Run simple tests
         run: ./test.sh
+
+  docker:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        packages: write
+        actions: read
+      needs: test
+      
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+          
+        - name: Build Docker image
+          run: docker build -t my-app .
+          
+        - name: Log in to GHCR
+          run: |
+            echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u Darktezi --password-stdin
+            
+        - name: Push to GHCR
+          run: |
+            docker tag my-app ghcr.io/darktezi/static-website-example:latest
+            docker push ghcr.io/darktezi/static-website-example:latest
