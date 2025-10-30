@@ -36,8 +36,5 @@ jobs:
               --restart unless-stopped \
               ghcr.io/darktezi/static-website-example:latest
             
-            # Очистка старых образов
-            docker image prune -f
-            
             echo '✅ Deployment completed!'
           "
