@@ -9,8 +9,6 @@ on:
     branches:
       - master
       - github-actions
-  release:
-    types: [published]
 
 jobs:
   test:
