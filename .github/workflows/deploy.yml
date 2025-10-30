@@ -39,7 +39,7 @@ jobs:
             echo '🚀 Запускаем новый контейнер (порт 8080:80)...'
             docker run -d \
               --name \$CONTAINER_NAME \
-              -p 8080:80 \
+              -p 8181:8181 \
               --restart always \
               \$IMAGE_NAME
 
