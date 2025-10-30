@@ -17,7 +17,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy Docker container via SSH
+      - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" bash -s <<'EOF'
             set -e
@@ -27,21 +27,13 @@ jobs:
             echo "🔐 Logging into GHCR..."
             echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-            echo "📥 Pulling image: $IMAGE"
-            docker pull "$IMAGE"
-
             echo "🛑 Stopping old container..."
-            docker stop static-site 2>/dev/null || echo "No container to stop"
-            docker rm static-site 2>/dev/null || echo "No container to remove"
+            docker stop static-site 2>/dev/null || true
+            docker rm static-site 2>/dev/null || true
 
-            echo "🚀 Starting new container with restart policy..."
+            echo "🚀 Starting new container..."
             docker run -d --restart always --name static-site -p 8080:80 "$IMAGE"
 
-            echo "🧹 Cleaning up old images..."
-            docker image prune -f
-
-            echo "✅ Checking container status..."
-            docker ps | grep static-site
-
-            echo "🎉 Deployment completed successfully!"
+            echo "🎉 Done!"
           EOF
+
