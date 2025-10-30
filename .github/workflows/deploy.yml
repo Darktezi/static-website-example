@@ -19,33 +19,23 @@ jobs:
 
       - name: Deploy Docker container via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
-            set -e
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} '
+            echo "📦 Pulling latest Docker image..."
+            docker pull ghcr.io/darktezi/static-website-example:latest
 
-            APP_NAME=static-site
-            IMAGE_NAME=ghcr.io/darktezi/static-website-example:latest
-            CONTAINER_NAME=static-site
+            echo "🛑 Stopping old container..."
+            docker stop static-site || true
+            docker rm static-site || true
 
-            echo '📦 Авторизация в GHCR...'
-            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u Darktezi --password-stdin
-
-            echo '⬇️ Тянем свежий Docker-образ...'
-            docker pull \$IMAGE_NAME
-
-            echo '🛑 Останавливаем старый контейнер...'
-            docker stop \$CONTAINER_NAME || true
-            docker rm \$CONTAINER_NAME || true
-
-            echo '🚀 Запускаем новый контейнер...'
+            echo "🚀 Starting new container..."
             docker run -d \
-            --name static-site \
-            -p 8181:80 \
-            --restart always \
-            ghcr.io/darktezi/static-website-example:latest
+              --name static-site \
+              -p 8181:80 \
+              --restart always \
+              ghcr.io/darktezi/static-website-example:latest
 
+            echo "✅ Checking container status..."
+            docker ps | grep static-site
 
-            echo '✅ Проверяем статус контейнера...'
-            docker ps --filter name=\$CONTAINER_NAME
-
-            echo '🌐 Приложение доступно по адресу: http://app.${{ secrets.ID }}.${{ secrets.PROXY }}'
-          "
+            echo "🌐 Site should be available on VM at http://localhost:8181"
+          '
