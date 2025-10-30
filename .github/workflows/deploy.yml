@@ -28,11 +28,7 @@ jobs:
             docker rm static-site || true
 
             echo "🚀 Starting new container..."
-            docker run -d \
-              --name static-site \
-              -p 8181:80 \
-              --restart always \
-              ghcr.io/darktezi/static-website-example:latest
+            docker run -d --name static-site -p 8181:80 --restart always ghcr.io/darktezi/static-website-example:latest
 
             echo "✅ Checking container status..."
             docker ps | grep static-site
