@@ -36,16 +36,7 @@ jobs:
             docker rm static-site 2>/dev/null || echo 'No container to remove'
             
             echo '🚀 Starting new container...'
-            docker run -d --name static-site -p 80:80 ghcr.io/darktezi/static-website-example:latest
-            
-            echo '⏳ Waiting for container to start...'
-            sleep 5
-            
-            echo '🔍 Checking container status...'
-            docker ps
-            
-            echo '📋 Container logs:'
-            docker logs static-site
+            docker run -d --name static-site -p 8080:80 ghcr.io/darktezi/static-website-example:latest
             
             echo '🌐 Testing internal access...'
             curl -f http://localhost || echo '❌ Internal access failed'
