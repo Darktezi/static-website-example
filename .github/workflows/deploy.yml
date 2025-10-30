@@ -20,11 +20,7 @@ jobs:
 
       - name: Deploy Docker container via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -o ConnectTimeout=15 \
-              -i ~/.ssh/deploy_key \
-              -p ${{ secrets.SSH_PORT }} \
-              ${{ secrets.USER }}@${{ secrets.HOST }} "
+          ssh -p ${{ secrets.SERVER_SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
                 echo '📦 Logging in to GHCR...'
                 echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
@@ -36,7 +32,11 @@ jobs:
                 docker rm site || true
 
                 echo '🚀 Starting new container...'
-                docker run -d --name site -p 8181:80 --restart always ghcr.io/darktezi/static-website-example:latest
+                docker run -d \
+                --name site \
+                -p 8181:80 \
+                --restart always \
+                ghcr.io/darktezi/static-website-example:latest
 
                 echo '✅ Checking container status...'
                 docker ps | grep site || echo 'Container not running!'
@@ -45,4 +45,4 @@ jobs:
                 docker image prune -f
 
                 echo '🌐 Site should be available at http://localhost:8181'
-              "
+              EOF
