@@ -20,25 +20,34 @@ jobs:
       - name: Deploy Docker container via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.USER }}@${{ secrets.HOST }} "
-            # Останавливаем старый контейнер
+            # 1. Логинимся в GHCR для pull образа
+            echo '${{ secrets.TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+            
+            # 2. Pull latest image from GHCR (собранный в CI)
+            echo '📦 Pulling latest Docker image from GHCR...'
+            docker pull ghcr.io/darktezi/static-website-example:latest
+            
+            # 3. Останавливаем и удаляем старый контейнер
+            echo '🛑 Stopping old container...'
             docker stop static-site || true
             docker rm static-site || true
             
-            # Pull latest image from GHCR
-            echo '📦 Pulling latest Docker image...'
-            docker pull ghcr.io/darktezi/static-website-example:latest
-            
-            # Запускаем новый контейнер
-            echo '🚀 Starting new container...'
+            # 4. Запускаем новый контейнер с настройкой перезапуска
+            echo '🚀 Starting new container with restart policy...'
             docker run -d \
               --name static-site \
               -p 80:80 \
-              --restart unless-stopped \
+              --restart unless-stopped \  # Автоматический перезапуск
               ghcr.io/darktezi/static-website-example:latest
             
-            # Очистка старых образов
+            # 5. Очистка старых образов
+            echo '🧹 Cleaning up old images...'
             docker image prune -f
             
-            echo '✅ Deployment completed!'
-            echo '🌐 Site is available at: http://${{ secrets.HOST }}'
+            # 6. Проверяем что контейнер запустился
+            echo '✅ Checking container status...'
+            docker ps | grep static-site
+            
+            echo '🎉 Deployment completed successfully!'
+            echo '🌐 Your site is available at: http://app.akutin.course.prafdin.ru'
           "
